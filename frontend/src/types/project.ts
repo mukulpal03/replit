@@ -4,7 +4,6 @@ export interface CreateProjectResponse {
 }
 
 export interface DirectoryNode {
-  path: string
   name: string
   size?: number
   type?: 'directory' | 'file'

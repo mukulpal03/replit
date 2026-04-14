@@ -23,7 +23,6 @@ export const createProjectService = async (): Promise<string> => {
 };
 
 export interface DirectoryNode {
-  path: string;
   name: string;
   size?: number;
   type?: "directory" | "file";
@@ -32,7 +31,7 @@ export interface DirectoryNode {
 }
 
 export const getDirectoryTreeService = async (
-  projectId: string
+  projectId: string,
 ): Promise<DirectoryNode> => {
   const trimmedProjectId = projectId.trim();
   if (!trimmedProjectId) {
@@ -64,5 +63,10 @@ export const getDirectoryTreeService = async (
     throw new AppError("Unable to build directory tree", 500);
   }
 
-  return tree;
+  return stripPath(tree);
 };
+
+const stripPath = ({ path: _path, children, ...rest }: DirectoryNode & { path?: string }): DirectoryNode => ({
+  ...rest,
+  ...(children && { children: children.map(stripPath) }),
+});

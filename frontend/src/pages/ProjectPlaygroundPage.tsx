@@ -1,17 +1,35 @@
 import { useParams } from 'react-router-dom'
 import { PlaygroundEditor } from '../components/organisms/PlaygroundEditor'
+import { FileTree } from '../components/organisms/FileTree'
+import { useDirectoryTreeQuery } from '../apis/queries/useDirectoryTreeQuery'
 
 export const ProjectPlaygroundPage = () => {
   const { projectId } = useParams<{ projectId: string }>()
 
+  const { data, isLoading, isError } = useDirectoryTreeQuery(projectId ?? '')
+
   return (
-    <main className="min-h-screen px-4 py-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-        <p className="text-sm text-muted-foreground">
-          Project ID: {projectId ?? 'Unknown'}
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <aside className="flex w-60 shrink-0 flex-col border-r bg-muted/30">
+        <p className="border-b px-3 py-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          Explorer
         </p>
+        {isLoading && (
+          <p className="px-3 py-2 text-xs text-muted-foreground">Loading...</p>
+        )}
+        {isError && (
+          <p className="px-3 py-2 text-xs text-destructive">Failed to load tree</p>
+        )}
+        {data?.tree && (
+          <FileTree root={data.tree} />
+        )}
+      </aside>
+
+      {/* Editor */}
+      <main className="flex flex-1 flex-col overflow-hidden p-4">
         <PlaygroundEditor />
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
