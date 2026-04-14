@@ -1,36 +1,36 @@
-import { cn } from '../../lib/utils'
-
-export interface EditorTabItem {
-  id: string
-  label: string
-}
+import { type EditorTab } from "../../store/editorTabsStore";
+import { cn } from "../../lib/utils";
 
 interface EditorTabsProps {
-  tabs: EditorTabItem[]
-  activeTabId: string
-  onChange: (tabId: string) => void
+  tabs: EditorTab[];
+  activeTabId: string | null;
+  onTabChange: (tabId: string) => void;
 }
 
-export const EditorTabs = ({ tabs, activeTabId, onChange }: EditorTabsProps) => (
+export const EditorTabs = ({
+  tabs,
+  activeTabId,
+  onTabChange,
+}: EditorTabsProps) => (
   <div className="flex items-center gap-1 border-b bg-muted/50 px-2 py-1">
     {tabs.map((tab) => {
-      const isActive = tab.id === activeTabId
+      const isActive = tab.id === activeTabId;
 
       return (
         <button
           key={tab.id}
           type="button"
-          onClick={() => onChange(tab.id)}
+          onClick={() => onTabChange(tab.id)}
           className={cn(
-            'rounded-sm px-3 py-1.5 text-xs font-medium transition-colors',
+            "rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
             isActive
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-background/60 hover:text-foreground",
           )}
         >
           {tab.label}
         </button>
-      )
+      );
     })}
   </div>
-)
+);

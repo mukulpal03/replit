@@ -1,20 +1,21 @@
-import { useMemo, useState } from 'react'
-import Editor from '@monaco-editor/react'
-import { EditorTabs, type EditorTabItem } from '../molecules/EditorTabs'
+import { useEffect, useMemo } from "react";
+import Editor from "@monaco-editor/react";
+import { EditorTabs } from "../molecules/EditorTabs";
+import { useEditorTabsStore } from "../../store/editorTabsStore";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../ui/card'
+} from "../ui/card";
 
-const starterFiles: Record<string, string> = {
-  'App.tsx': `export default function App() {
+const STARTER_FILES: Record<string, string> = {
+  "App.tsx": `export default function App() {
   return <h1>Hello from playground</h1>
 }
 `,
-  'main.tsx': `import { StrictMode } from 'react'
+  "main.tsx": `import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 
@@ -24,17 +25,21 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 `,
-}
-
-const tabs: EditorTabItem[] = Object.keys(starterFiles).map((fileName) => ({
-  id: fileName,
-  label: fileName,
-}))
+};
 
 export const PlaygroundEditor = () => {
-  const [activeTabId, setActiveTabId] = useState<string>(tabs[0].id)
+  const { tabs, activeTabId, setTabs, setActiveTab } = useEditorTabsStore();
 
-  const activeCode = useMemo(() => starterFiles[activeTabId], [activeTabId])
+  useEffect(() => {
+    setTabs(
+      Object.keys(STARTER_FILES).map((name) => ({ id: name, label: name }))
+    );
+  }, [setTabs]);
+
+  const activeCode = useMemo(
+    () => (activeTabId ? (STARTER_FILES[activeTabId] ?? "") : ""),
+    [activeTabId]
+  );
 
   return (
     <Card className="w-full">
@@ -49,7 +54,7 @@ export const PlaygroundEditor = () => {
           <EditorTabs
             tabs={tabs}
             activeTabId={activeTabId}
-            onChange={setActiveTabId}
+            onTabChange={setActiveTab}
           />
           <Editor
             height="60vh"
@@ -65,5 +70,5 @@ export const PlaygroundEditor = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
