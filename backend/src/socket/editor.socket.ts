@@ -1,5 +1,6 @@
 import { Socket, Namespace } from "socket.io";
 import chokidar, { FSWatcher } from "chokidar";
+import { handleEditorSocketEvents } from "./handlers/editor";
 
 export const handleEditorNamespace = (namespace: Namespace) => {
   namespace.on("connection", (socket: Socket) => {
@@ -27,9 +28,7 @@ export const handleEditorNamespace = (namespace: Namespace) => {
       console.warn("No projectId provided in socket handshake query.");
     }
 
-    socket.on("message", (data) => {
-      console.log("Message from editor", data);
-    });
+    handleEditorSocketEvents(socket);
 
     socket.on("disconnect", async () => {
       if (watcher) {
