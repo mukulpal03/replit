@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { socket } from "../lib/socket";
-import { useSocketContext } from "../app/providers/SocketProvider";
+import { useSocketStore } from "../store/socketStore";
 
 export const useSocket = () => {
-  const { isConnected } = useSocketContext();
+  const { isConnected } = useSocketStore();
   return { socket, isConnected };
 };
 
 export const useProjectSocket = (projectId: string | undefined) => {
-  const { isConnected, connect, disconnect } = useSocketContext();
+  const { isConnected, connect, disconnect } = useSocketStore();
 
   useEffect(() => {
     if (projectId) {
@@ -22,3 +22,4 @@ export const useProjectSocket = (projectId: string | undefined) => {
 
   return { socket, isConnected };
 };
+
