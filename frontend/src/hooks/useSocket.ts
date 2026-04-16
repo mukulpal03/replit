@@ -1,25 +1,31 @@
 import { useEffect } from "react";
-import { socket } from "../lib/socket";
+import { getSocket } from "../lib/socket";
 import { useSocketStore } from "../store/socketStore";
 
-export const useSocket = () => {
-  const { isConnected } = useSocketStore();
+export const useSocket = (namespace: string = "/") => {
+  const isConnected = useSocketStore((s) => !!s.isConnected[namespace]);
+  const socket = getSocket(namespace);
   return { socket, isConnected };
 };
 
-export const useProjectSocket = (projectId: string | undefined) => {
-  const { isConnected, connect, disconnect } = useSocketStore();
+export const useEditorSocket = (projectId: string | undefined) => {
+  const namespace = "/editor";
+
+  const connect = useSocketStore((s) => s.connect);
+  const disconnect = useSocketStore((s) => s.disconnect);
+  const isConnected = useSocketStore((s) => !!s.isConnected[namespace]);
+
+  const socket = getSocket(namespace);
 
   useEffect(() => {
     if (projectId) {
-      connect(projectId);
+      connect(namespace, projectId);
     }
 
     return () => {
-      disconnect();
+      disconnect(namespace);
     };
   }, [projectId, connect, disconnect]);
 
   return { socket, isConnected };
 };
-

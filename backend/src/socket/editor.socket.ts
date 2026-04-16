@@ -7,11 +7,12 @@ export const handleEditorNamespace = (namespace: Namespace) => {
     console.log("User connected to editor", socket.id);
 
     const projectId = socket.handshake.query.projectId as string;
+    console.log(`User connected to editor namespace. Project ID: ${projectId || "None"}`);
 
     let watcher: FSWatcher | null = null;
 
     if (projectId) {
-      console.log(`Starting watcher for project: ${projectId}`);
+      console.log(`Initializing file watcher for project: ${projectId}`);
       watcher = chokidar.watch(`./projects/${projectId}`, {
         ignored: (path) => path.includes("node_modules"), // Ignore node_modules directory
         persistent: true, // Keep the watcher in running state till the time the server is running

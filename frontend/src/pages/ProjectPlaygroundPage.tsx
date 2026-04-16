@@ -2,12 +2,12 @@ import { useParams } from "react-router-dom";
 import { PlaygroundEditor } from "../components/organisms/PlaygroundEditor";
 import { FileTree } from "../components/organisms/FileTree";
 import { useDirectoryTreeQuery } from "../apis/queries/useDirectoryTreeQuery";
-import { useProjectSocket } from "../hooks/useSocket";
+import { useEditorSocket } from "../hooks/useSocket";
 
 export const ProjectPlaygroundPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
 
-  const { isConnected } = useProjectSocket(projectId);
+  const { isConnected } = useEditorSocket(projectId);
 
   const { data, isLoading, isError } = useDirectoryTreeQuery(projectId ?? "");
 

@@ -1,32 +1,50 @@
 import { create } from "zustand";
-import { socket } from "../lib/socket";
+import { getSocket } from "../lib/socket";
 
-interface SocketState {
-  isConnected: boolean;
-  connect: (projectId: string) => void;
-  disconnect: () => void;
+interface SocketStore {
+  isConnected: Record<string, boolean>;
+  connect: (namespace: string, projectId?: string) => void;
+  disconnect: (namespace: string) => void;
 }
 
-export const useSocketStore = create<SocketState>((set) => {
-  socket.on("connect", () => set({ isConnected: true }));
-  socket.on("disconnect", () => set({ isConnected: false }));
+export const useSocketStore = create<SocketStore>((set, get) => ({
+  isConnected: {},
 
-  return {
-    isConnected: socket.connected,
-    connect: (projectId: string) => {
-      if (
-        socket.connected &&
-        (socket.io.opts.query as any)?.projectId !== projectId
-      ) {
-        socket.disconnect();
+  connect: (namespace, projectId) => {
+    const socket = getSocket(namespace);
+
+    if (get().isConnected[namespace] === undefined) {
+      set((s) => ({
+        isConnected: { ...s.isConnected, [namespace]: socket.connected },
+      }));
+
+      socket.on("connect", () =>
+        set((s) => ({ isConnected: { ...s.isConnected, [namespace]: true } })),
+      );
+      socket.on("disconnect", () =>
+        set((s) => ({ isConnected: { ...s.isConnected, [namespace]: false } })),
+      );
+    }
+
+    if (projectId) {
+      const currentQuery = socket.io.opts.query as any;
+      if (currentQuery?.projectId !== projectId) {
+        if (socket.connected) {
+          socket.disconnect();
+        }
+        socket.io.opts.query = { ...currentQuery, projectId };
       }
+    }
 
-      // Update the handshake query and connect
-      socket.io.opts.query = { projectId };
+    if (!socket.connected) {
       socket.connect();
-    },
-    disconnect: () => {
+    }
+  },
+
+  disconnect: (namespace) => {
+    const socket = getSocket(namespace);
+    if (socket.connected) {
       socket.disconnect();
-    },
-  };
-});
+    }
+  },
+}));
