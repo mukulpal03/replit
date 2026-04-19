@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { DirectoryNode } from '../types/project'
 import type { DialogType } from '../components/organisms/FileTreeDialogs'
+import { editorSocket } from '../lib/socket'
 
 export const useFileTreeDialogs = () => {
   const [dialogState, setDialogState] = useState<{ type: DialogType; node: DirectoryNode | null }>({ type: null, node: null })
@@ -27,16 +28,28 @@ export const useFileTreeDialogs = () => {
     e.preventDefault()
     if (!inputValue.trim() || !dialogState.node) return
 
-    console.log(`Action: ${dialogState.type}`, {
-      target: dialogState.node.path,
-      value: inputValue,
-    })
+    const { type, node } = dialogState
+
+    if (type === 'createFile') {
+      editorSocket.emit('createFile', { pathToFileOrDir: `${node.path}/${inputValue}` })
+    } else if (type === 'createFolder') {
+      editorSocket.emit('createDirectory', { pathToFileOrDir: `${node.path}/${inputValue}` })
+    } else if (type === 'rename') {
+      const parentPath = node.path.substring(0, node.path.lastIndexOf('/'))
+      const newPath = `${parentPath}/${inputValue}`
+      const eventName = node.type === 'directory' ? 'renameDirectory' : 'renameFile'
+      editorSocket.emit(eventName, { pathToFileOrDir: node.path, newPath })
+    }
+
     closeDialogs()
   }
 
   const handleDeleteSubmit = () => {
     if (!deleteNode) return
-    console.log(`Action: delete`, { target: deleteNode.path })
+    
+    const eventName = deleteNode.type === 'directory' ? 'deleteDirectory' : 'deleteFile'
+    editorSocket.emit(eventName, { pathToFileOrDir: deleteNode.path })
+
     closeDialogs()
   }
 

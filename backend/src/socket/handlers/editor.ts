@@ -4,6 +4,7 @@ import fs from "fs/promises";
 interface EventPayload {
   data: string;
   pathToFileOrDir: string;
+  newPath?: string;
 }
 
 export const handleEditorSocketEvents = (socket: Socket) => {
@@ -34,6 +35,11 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       socket.emit("createFileSuccess", {
         data: "File created successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error: any) {
       if (error.code === "EEXIST") {
         socket.emit("createFileError", { data: "File already exists" });
@@ -60,18 +66,29 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       socket.emit("deleteFileSuccess", {
         data: "File deleted successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error) {
       console.log("Error while deleting file", error);
       socket.emit("deleteFileError", error);
     }
   });
 
-  socket.on("renameFile", async ({ pathToFileOrDir }: EventPayload) => {
+  socket.on("renameFile", async ({ pathToFileOrDir, newPath }: EventPayload) => {
     try {
-      await fs.rename(pathToFileOrDir, pathToFileOrDir);
+      if (!newPath) throw new Error("newPath is required for rename");
+      await fs.rename(pathToFileOrDir, newPath);
       socket.emit("renameFileSuccess", {
         data: "File renamed successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error) {
       console.log("Error while renaming file", error);
       socket.emit("renameFileError", error);
@@ -84,6 +101,11 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       socket.emit("createDirectorySuccess", {
         data: "Directory created successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error) {
       console.log("Error while creating directory", error);
       socket.emit("createDirectoryError", error);
@@ -96,18 +118,29 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       socket.emit("deleteDirectorySuccess", {
         data: "Directory deleted successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error) {
       console.log("Error while deleting directory", error);
       socket.emit("deleteDirectoryError", error);
     }
   });
 
-  socket.on("renameDirectory", async ({ pathToFileOrDir }: EventPayload) => {
+  socket.on("renameDirectory", async ({ pathToFileOrDir, newPath }: EventPayload) => {
     try {
-      await fs.rename(pathToFileOrDir, pathToFileOrDir);
+      if (!newPath) throw new Error("newPath is required for rename");
+      await fs.rename(pathToFileOrDir, newPath);
       socket.emit("renameDirectorySuccess", {
         data: "Directory renamed successfully",
       });
+
+      const projectId = socket.handshake.query.projectId as string;
+      if (projectId) {
+        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      }
     } catch (error) {
       console.log("Error while renaming directory", error);
       socket.emit("renameDirectoryError", error);
