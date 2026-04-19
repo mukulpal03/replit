@@ -46,5 +46,9 @@ export const useEditorSocket = (projectId: string | undefined) => {
     editorSocket.emit("readFile", { pathToFileOrDir: path });
   };
 
-  return { socket: editorSocket, isConnected, readFile };
+  const writeFile = (path: string, content: string) => {
+    editorSocket.emit("writeFile", { pathToFileOrDir: path, data: content });
+  };
+
+  return { socket: editorSocket, isConnected, readFile, writeFile };
 };

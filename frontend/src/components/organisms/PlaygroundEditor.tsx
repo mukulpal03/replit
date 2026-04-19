@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { EditorTabs } from "../molecules/EditorTabs";
 import { useEditorTabsStore } from "../../store/editorTabsStore";
+import { editorSocket } from "../../lib/socket";
 import { getLanguageFromFileName } from "../../lib/file";
 import {
   Card,
@@ -12,15 +13,43 @@ import {
 } from "../ui/card";
 
 export const PlaygroundEditor = () => {
-  const { tabs, activeTabId, setActiveTab, closeTab } = useEditorTabsStore();
+  const { tabs, activeTabId, setActiveTab, closeTab, updateTabContent } =
+    useEditorTabsStore();
 
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeTabId),
-    [tabs, activeTabId]
+    [tabs, activeTabId],
   );
 
   const activeCode = activeTab?.content ?? "";
   const activeLanguage = getLanguageFromFileName(activeTab?.label ?? "");
+
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value === undefined || !activeTab) return;
+
+    updateTabContent(activeTab.id, value);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      editorSocket.emit("writeFile", {
+        pathToFileOrDir: activeTab.id,
+        data: value,
+      });
+    }, 1000);
+  };
 
   return (
     <Card className="w-full flex flex-col h-full overflow-hidden">
@@ -45,6 +74,7 @@ export const PlaygroundEditor = () => {
                   language={activeLanguage}
                   value={activeCode}
                   theme="vs-dark"
+                  onChange={handleEditorChange}
                   options={{
                     minimap: { enabled: false },
                     fontSize: 14,
