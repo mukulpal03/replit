@@ -24,7 +24,7 @@ export const PlaygroundEditor = () => {
   const activeCode = activeTab?.content ?? "";
   const activeLanguage = getLanguageFromFileName(activeTab?.label ?? "");
 
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
