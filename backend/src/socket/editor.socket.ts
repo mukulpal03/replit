@@ -12,6 +12,7 @@ export const handleEditorNamespace = (namespace: Namespace) => {
     let watcher: FSWatcher | null = null;
 
     if (projectId) {
+      socket.join(projectId);
       console.log(`Initializing file watcher for project: ${projectId}`);
       watcher = chokidar.watch(`./projects/${projectId}`, {
         ignored: (path) => path.includes("node_modules"), // Ignore node_modules directory

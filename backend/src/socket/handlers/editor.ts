@@ -13,6 +13,13 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       socket.emit("writeFileSuccess", {
         data: "File written successfully",
       });
+
+      // Broadcast to other users in the same project
+      const projectId = socket.handshake.query.projectId as string;
+
+      if (projectId) {
+        socket.to(projectId).emit("fileUpdated", { pathToFileOrDir, data });
+      }
     } catch (error) {
       console.log("Error while writing file", error);
       socket.emit("writeFileError", error);

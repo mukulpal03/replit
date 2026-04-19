@@ -35,10 +35,31 @@ export const useEditorSocket = (projectId: string | undefined) => {
       });
     };
 
+    const handleFileUpdated = ({
+      pathToFileOrDir,
+      data,
+    }: {
+      pathToFileOrDir: string;
+      data: string;
+    }) => {
+      const tabs = useEditorTabsStore.getState().tabs;
+      if (tabs.find((t) => t.id === pathToFileOrDir)) {
+        useEditorTabsStore.getState().updateTabContent(pathToFileOrDir, data);
+      }
+    };
+
+    const handleWriteFileSuccess = () => {
+      console.log("File saved successfully.");
+    };
+
     editorSocket.on("readFileSuccess", handleReadFileSuccess);
+    editorSocket.on("fileUpdated", handleFileUpdated);
+    editorSocket.on("writeFileSuccess", handleWriteFileSuccess);
 
     return () => {
       editorSocket.off("readFileSuccess", handleReadFileSuccess);
+      editorSocket.off("fileUpdated", handleFileUpdated);
+      editorSocket.off("writeFileSuccess", handleWriteFileSuccess);
     };
   }, [addTab]);
 
