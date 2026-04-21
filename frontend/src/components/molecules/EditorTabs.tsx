@@ -1,5 +1,4 @@
 import { type EditorTab } from "../../store/editorTabsStore";
-import { cn } from "../../lib/utils";
 import { FileIcon } from "../atoms/FileIcon";
 import { X } from "lucide-react";
 
