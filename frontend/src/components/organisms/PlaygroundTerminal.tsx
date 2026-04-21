@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useShellSocket } from "../../hooks/useShellSocket";
 import { useParams } from "react-router-dom";
+import { Plus } from "lucide-react";
 
 export const PlaygroundTerminal = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -15,53 +15,58 @@ export const PlaygroundTerminal = () => {
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Initialize Terminal
     const term = new Terminal({
       cursorBlink: true,
-      fontSize: 14,
-      fontFamily: "'Geist Mono', 'Menlo', 'Monaco', 'Courier New', monospace",
+      cursorStyle: "block",
+      fontSize: 12,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Menlo', 'Monaco', monospace",
+      fontWeight: "normal",
+      lineHeight: 1.5,
       theme: {
-        background: "#1e1e1e",
-        foreground: "#ffffff",
-        cursor: "#ffffff",
-        selectionBackground: "rgba(255, 255, 255, 0.3)",
+        background: "#080809",
+        foreground: "#F0EEE8",
+        cursor: "#3EFF9E",
+        cursorAccent: "#080809",
+        selectionBackground: "rgba(91,127,255,0.25)",
+        // ANSI colors
+        black:   "#0A0A0B",
+        red:     "#FF5757",
+        green:   "#2DD98F",
+        yellow:  "#FFB547",
+        blue:    "#5B7FFF",
+        magenta: "#C792EA",
+        cyan:    "#89DDFF",
+        white:   "#F0EEE8",
+        brightBlack:   "#6E6D6A",
+        brightRed:     "#FF5757",
+        brightGreen:   "#3EFF9E",
+        brightYellow:  "#FFB547",
+        brightBlue:    "#82AAFF",
+        brightMagenta: "#A78BFA",
+        brightCyan:    "#89DDFF",
+        brightWhite:   "#FFFFFF",
       },
     });
 
-    // Initialize Fit Addon
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
-
-    // Open terminal in the ref
     term.open(terminalRef.current);
     fitAddon.fit();
 
-    // Store refs for cleanup and resizing
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    // Welcome message
-    term.writeln("\x1b[1;32mWelcome to the Project Playground Terminal!\x1b[0m");
-    term.writeln("Backend connection established.");
-    term.write("\r\n$ ");
-
-    // Pipe socket data to terminal
     const removeSocketListener = onData((data) => {
       term.write(data);
     });
 
-    // Pipe terminal input to socket
     const onDataDisposable = term.onData((data) => {
       sendData(data);
     });
 
-    // Handle window resize
-    const handleResize = () => {
-      fitAddon.fit();
-    };
+    const handleResize = () => { fitAddon.fit(); };
     window.addEventListener("resize", handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
       onDataDisposable.dispose();
@@ -73,16 +78,90 @@ export const PlaygroundTerminal = () => {
   }, []);
 
   return (
-    <Card className="w-full flex flex-col h-full overflow-hidden bg-[#1e1e1e] border-none shadow-none">
-      <CardHeader className="py-2 px-4 border-b border-white/10 bg-background/50">
-        <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500 animate-pulse"}`} />
-          Terminal {isConnected ? "" : "(Disconnected)"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 p-0 overflow-hidden">
-        <div ref={terminalRef} className="h-full w-full p-2" />
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        background: '#080809',
+      }}
+    >
+      {/* Terminal tab bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: '28px',
+          padding: '0 12px',
+          background: '#080809',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0 8px',
+              height: '20px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '3px',
+            }}
+          >
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: isConnected ? '#2DD98F' : '#FF5757',
+                display: 'inline-block',
+                flexShrink: 0,
+              }}
+              className={!isConnected ? 'animate-pulse-dot' : undefined}
+            />
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#6E6D6A',
+                fontFamily: 'Geist, sans-serif',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Terminal{!isConnected ? ' (Disconnected)' : ''}
+            </span>
+          </div>
+        </div>
+
+        {/* + new terminal */}
+        <button
+          title="New Terminal"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#3E3D3B',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '2px',
+            transition: 'color 0.15s ease',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#F0EEE8' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = '#3E3D3B' }}
+        >
+          <Plus size={13} />
+        </button>
+      </div>
+
+      {/* xterm content */}
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        <div ref={terminalRef} style={{ position: 'absolute', inset: 0, padding: '4px 8px' }} />
+      </div>
+    </div>
   );
 };

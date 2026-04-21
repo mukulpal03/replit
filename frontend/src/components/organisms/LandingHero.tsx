@@ -1,151 +1,627 @@
-import { ArrowRight, Circle, Code2, TerminalSquare } from "lucide-react";
-import { Button } from "../ui/button";
-import { useCreateProject } from "../../hooks/useCreateProject";
 import { useNavigate } from "react-router-dom";
+import { useCreateProject } from "../../hooks/useCreateProject";
 import { Spinner } from "../ui/spinner";
-import { Alert } from "../ui/alert";
+
+const AVATARS = ["JD", "MK", "AR", "TP", "SL"];
+const AVATAR_COLORS = ["#5B7FFF", "#A78BFA", "#2DD98F", "#FFB547", "#FF5757"];
 
 export const LandingHero = () => {
   const { createProject, isCreatingProject, projectError } = useCreateProject();
   const navigate = useNavigate();
 
-  const handleCreateProject = async () => {
+  const handleCreate = async () => {
     try {
-      const response = await createProject();
-      navigate(`/project/${response.id}`);
-    } catch (e) {
-      // Error handled by hook
-    }
+      const res = await createProject();
+      navigate(`/project/${res.id}`);
+    } catch {}
   };
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-32 lg:pt-36 flex flex-col items-center justify-center text-center container mx-auto px-4">
-      <div className="absolute top-0 -translate-y-12 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-30 blur-[100px] pointer-events-none rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
+    <section
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        padding: "80px 24px 64px",
+      }}
+    >
+      {/* Dot grid background */}
+      <div
+        className="dot-grid"
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
-      <div className="relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both">
-        <div className="inline-flex items-center rounded-full border border-border/50 bg-background/50 px-3 py-1 text-sm font-medium backdrop-blur-xl mb-8 transition-colors hover:bg-muted/50 cursor-default">
-          <span className="flex h-2 w-2 rounded-full bg-indigo-500 mr-2 shadow-[0_0_12px_rgba(99,102,241,0.8)]"></span>
-          Devix Workspace
-          <span className="ml-2 text-muted-foreground border-l border-border/50 pl-2">
-            v1.0 is shipping
-          </span>
+      {/* Accent glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "10%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "700px",
+          height: "400px",
+          background:
+            "radial-gradient(ellipse, rgba(91,127,255,0.12) 0%, transparent 70%)",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      {/* Content */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          maxWidth: "860px",
+          width: "100%",
+        }}
+      >
+        {/* Badge */}
+        <div
+          className="animate-fade-up"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "4px 12px",
+            background: "#18181C",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "100px",
+            fontSize: "12px",
+            color: "#6E6D6A",
+            marginBottom: "28px",
+            fontFamily: "Geist, system-ui, sans-serif",
+          }}
+        >
+          <span
+            className="animate-pulse-dot"
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "#5B7FFF",
+              flexShrink: 0,
+            }}
+          />
+          Now in public beta
         </div>
 
-        <h1 className="max-w-4xl mx-auto text-5xl font-extrabold tracking-tight sm:text-7xl lg:text-8xl">
-          The development <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/50 dark:from-neutral-100 dark:to-neutral-500">
-            system for makers
-          </span>
+        {/* Headline */}
+        <h1
+          className="animate-fade-up-d1"
+          style={{
+            fontFamily: "'Instrument Serif', 'Fraunces', Georgia, serif",
+            fontStyle: "italic",
+            fontSize: "clamp(52px, 8vw, 88px)",
+            fontWeight: 400,
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
+            color: "#F0EEE8",
+            margin: "0 0 20px",
+          }}
+        >
+          Code.{" "}
+          <span
+            style={{
+              background: "linear-gradient(135deg, #5B7FFF, #A78BFA)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Run.
+          </span>{" "}
+          Ship.
         </h1>
 
-        <p className="mt-8 max-w-2xl mx-auto text-lg leading-8 text-muted-foreground font-medium">
-          Purpose-built for speed and collaboration. Instantly spin up a
-          containerized React environment right in your browser, and build at
-          the speed of thought.
+        {/* Subheadline */}
+        <p
+          className="animate-fade-up-d2"
+          style={{
+            fontFamily: "Geist, system-ui, sans-serif",
+            fontSize: "20px",
+            lineHeight: 1.7,
+            color: "#6E6D6A",
+            maxWidth: "520px",
+            margin: "0 0 36px",
+          }}
+        >
+          A full development environment in your browser. No setup. No config.
+          Just code.
         </p>
 
-        <div className="mt-10 flex items-center justify-center gap-x-6">
-          <Button
-            size="lg"
-            onClick={() => void handleCreateProject()}
+        {/* CTA Row */}
+        <div
+          className="animate-fade-up-d2"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <button
+            id="hero-start-button"
+            onClick={() => void handleCreate()}
             disabled={isCreatingProject}
-            className="h-14 px-8 text-base shadow-[0_0_40px_rgba(99,102,241,0.3)] transition-transform hover:scale-105 active:scale-95 bg-primary text-primary-foreground font-semibold rounded-full"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              height: "40px",
+              padding: "0 20px",
+              background: "#5B7FFF",
+              color: "#ffffff",
+              fontSize: "14px",
+              fontFamily: "Geist, system-ui, sans-serif",
+              fontWeight: 500,
+              borderRadius: "4px",
+              border: "none",
+              cursor: isCreatingProject ? "not-allowed" : "pointer",
+              boxShadow: "0 0 20px rgba(91,127,255,0.35)",
+              opacity: isCreatingProject ? 0.7 : 1,
+              transition: "opacity 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!isCreatingProject) e.currentTarget.style.opacity = "0.88";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = isCreatingProject ? "0.7" : "1";
+            }}
           >
             {isCreatingProject ? (
               <>
-                <Spinner className="mr-2 h-5 w-5" />
-                Allocating Container...
+                <Spinner />
+                Allocating...
               </>
             ) : (
-              <>
-                Start Building for Free <ArrowRight className="ml-2 h-5 w-5" />
-              </>
+              "Start for free"
             )}
-          </Button>
+          </button>
+
+          <button
+            id="hero-demo-button"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              height: "40px",
+              padding: "0 20px",
+              background: "transparent",
+              color: "#F0EEE8",
+              fontSize: "14px",
+              fontFamily: "Geist, system-ui, sans-serif",
+              fontWeight: 500,
+              borderRadius: "4px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              cursor: "pointer",
+              transition: "border-color 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#5B7FFF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+            }}
+          >
+            {/* Play icon */}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 1.5L9.5 6L2.5 10.5V1.5Z" fill="#F0EEE8" />
+            </svg>
+            View demo
+          </button>
         </div>
 
+        {/* Social proof */}
+        <div
+          className="animate-fade-up-d3"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginTop: "20px",
+          }}
+        >
+          <div style={{ display: "flex" }}>
+            {AVATARS.map((initials, i) => (
+              <div
+                key={initials}
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "50%",
+                  background: AVATAR_COLORS[i],
+                  border: "2px solid #0A0A0B",
+                  marginLeft: i === 0 ? 0 : "-8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "9px",
+                  fontWeight: 500,
+                  color: "#fff",
+                  fontFamily: "Geist, system-ui, sans-serif",
+                }}
+              >
+                {initials}
+              </div>
+            ))}
+          </div>
+          <span
+            style={{
+              fontSize: "13px",
+              color: "#3E3D3B",
+              fontFamily: "Geist, system-ui, sans-serif",
+            }}
+          >
+            Trusted by 12,000+ developers
+          </span>
+        </div>
+
+        {/* Error */}
         {projectError && (
-          <div className="mt-8 w-full max-w-md mx-auto animate-in fade-in">
-            <Alert
-              variant="destructive"
-              className="text-left backdrop-blur-sm bg-destructive/10 border-destructive/20"
-            >
-              {projectError}
-            </Alert>
+          <div
+            style={{
+              marginTop: "16px",
+              padding: "12px 16px",
+              background: "rgba(255,87,87,0.1)",
+              border: "1px solid rgba(255,87,87,0.3)",
+              borderRadius: "6px",
+              fontSize: "13px",
+              color: "#FF5757",
+              fontFamily: "Geist, system-ui, sans-serif",
+            }}
+          >
+            {projectError}
           </div>
         )}
       </div>
 
-      <div className="relative z-10 w-full max-w-5xl mx-auto mt-24 mb-10 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300 fill-mode-both">
-        <div className="relative rounded-xl border border-border/50 bg-background/40 backdrop-blur-2xl shadow-2xl overflow-hidden ring-1 ring-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-
-          {/* Header */}
-          <div className="flex items-center px-4 py-3 border-b border-border/50 bg-muted/20">
-            <div className="flex space-x-2">
-              <Circle className="h-3 w-3 fill-red-500 text-red-500" />
-              <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-              <Circle className="h-3 w-3 fill-green-500 text-green-500" />
-            </div>
-            <div className="mx-auto flex items-center space-x-2 text-xs font-medium text-muted-foreground/80">
-              <Code2 className="h-3 w-3" />
-              <span>frontend / App.tsx</span>
-            </div>
+      {/* Hero Visual — Product UI Mock */}
+      <div
+        className="animate-fade-up-d3"
+        style={{
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          maxWidth: "1000px",
+          margin: "64px auto 0",
+        }}
+      >
+        <div
+          style={{
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "8px",
+            background: "#0E0E11",
+            boxShadow:
+              "0 0 80px rgba(91,127,255,0.12), 0 0 0 1px rgba(255,255,255,0.06)",
+            overflow: "hidden",
+          }}
+        >
+          {/* Window chrome */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "10px 16px",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              background: "#0A0A0B",
+            }}
+          >
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#FF5757",
+                display: "block",
+              }}
+            />
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#FFB547",
+                display: "block",
+              }}
+            />
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#2DD98F",
+                display: "block",
+              }}
+            />
+            <span
+              style={{
+                flex: 1,
+                textAlign: "center",
+                fontSize: "12px",
+                color: "#3E3D3B",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
+              devix — workspace / App.tsx
+            </span>
           </div>
 
-          {/* Editor Body */}
-          <div className="flex h-[400px]">
-            {/* Sidebar Mock */}
-            <div className="w-16 sm:w-48 border-r border-border/50 p-4 space-y-4 hidden sm:block bg-muted/10">
-              <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
-              <div className="h-3 w-3/4 bg-muted rounded animate-pulse delay-75" />
-              <div className="h-3 w-2/3 bg-muted rounded animate-pulse delay-150" />
-              <div className="h-3 w-full bg-primary/20 rounded" />
-              <div className="h-3 w-4/5 bg-muted rounded animate-pulse delay-300" />
+          {/* IDE Layout */}
+          <div style={{ display: "flex", height: "420px" }}>
+            {/* Sidebar */}
+            <div
+              style={{
+                width: "180px",
+                background: "#0E0E11",
+                borderRight: "1px solid rgba(255,255,255,0.06)",
+                padding: "8px 0",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "11px",
+                  color: "#3E3D3B",
+                  fontFamily: "Geist, sans-serif",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Explorer
+              </div>
+              {[
+                { name: "src", type: "folder", depth: 0 },
+                {
+                  name: "App.tsx",
+                  type: "file",
+                  depth: 1,
+                  color: "#4FC1FF",
+                  active: true,
+                },
+                { name: "index.css", type: "file", depth: 1, color: "#E879F9" },
+                { name: "main.tsx", type: "file", depth: 1, color: "#4FC1FF" },
+                { name: "components", type: "folder", depth: 1 },
+                {
+                  name: "package.json",
+                  type: "file",
+                  depth: 0,
+                  color: "#FFB547",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "3px 12px",
+                    paddingLeft: `${12 + item.depth * 12}px`,
+                    fontSize: "13px",
+                    fontFamily: "Geist, sans-serif",
+                    color: item.active ? "#F0EEE8" : "#6E6D6A",
+                    background: item.active
+                      ? "rgba(91,127,255,0.1)"
+                      : "transparent",
+                    borderLeft: item.active
+                      ? "2px solid #5B7FFF"
+                      : "2px solid transparent",
+                  }}
+                >
+                  {item.type === "folder" ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M1 3.5A1 1 0 012 2.5h3l1 1h4a1 1 0 011 1V9.5a1 1 0 01-1 1H2a1 1 0 01-1-1V3.5z"
+                        fill="rgba(91,127,255,0.5)"
+                      />
+                    </svg>
+                  ) : (
+                    <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                      <rect
+                        x="0"
+                        y="0"
+                        width="7"
+                        height="9"
+                        rx="1"
+                        fill={item.color || "#6E6D6A"}
+                        opacity="0.8"
+                      />
+                    </svg>
+                  )}
+                  {item.name}
+                </div>
+              ))}
             </div>
-            {/* Syntax Mock */}
-            <div className="flex-1 p-6 text-left font-mono text-sm leading-relaxed overflow-hidden relative">
-              <div className="text-blue-400">
-                import <span className="text-foreground">{"{"}</span>{" "}
-                <span className="text-indigo-300">useState</span>{" "}
-                <span className="text-foreground">{"}"}</span> from{" "}
-                <span className="text-green-400">'react'</span>;
-              </div>
-              <br />
-              <div className="text-purple-400">
-                export default function{" "}
-                <span className="text-yellow-300">App</span>() {"{"}
-              </div>
-              <div className="pl-4 text-foreground">
-                const [count, setCount] ={" "}
-                <span className="text-indigo-300">useState</span>(0);
-              </div>
-              <br />
-              <div className="pl-4 text-purple-400">return (</div>
-              <div className="pl-8 text-gray-300">
-                {'<div className="min-h-screen bg-black text-white">'}
-              </div>
-              <div className="pl-12 text-foreground">
-                {"<h1>"}Devix is blazing fast{"</h1>"}
-              </div>
-              <div className="pl-8 text-gray-300">{"</div>"}</div>
-              <div className="pl-4 text-purple-400">);</div>
-              <div className="text-purple-400">{"}"}</div>
 
-              {/* Terminal Mock superimposed at the bottom right */}
-              <div className="absolute right-4 bottom-4 w-64 h-32 rounded-lg border border-border/50 bg-background/80 backdrop-blur shadow-2xl p-3 flex flex-col hidden sm:flex">
-                <div className="flex items-center mb-2 text-xs text-muted-foreground space-x-1">
-                  <TerminalSquare className="h-3 w-3" />
-                  <span>bash</span>
+            {/* Editor */}
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              {/* Tabs */}
+              <div
+                style={{
+                  display: "flex",
+                  background: "#0A0A0B",
+                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  height: "32px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 16px",
+                    fontSize: "13px",
+                    fontFamily: "Geist, sans-serif",
+                    color: "#F0EEE8",
+                    background: "#0E0E11",
+                    borderBottom: "1px solid #5B7FFF",
+                    gap: "6px",
+                  }}
+                >
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="7"
+                      height="9"
+                      rx="1"
+                      fill="#4FC1FF"
+                      opacity="0.8"
+                    />
+                  </svg>
+                  App.tsx
                 </div>
-                <div className="font-mono text-xs text-green-400">
-                  <span className="text-fuchsia-400">~</span>$ pnpm run dev
+              </div>
+
+              {/* Code */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: "16px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "13px",
+                  lineHeight: 1.6,
+                  overflow: "hidden",
+                }}
+              >
+                <div>
+                  <span style={{ color: "#C792EA" }}>import</span>{" "}
+                  <span style={{ color: "#89DDFF" }}>{"{"}</span>{" "}
+                  <span style={{ color: "#82AAFF" }}>useState</span>{" "}
+                  <span style={{ color: "#89DDFF" }}>{"}"}</span>{" "}
+                  <span style={{ color: "#C792EA" }}>from</span>{" "}
+                  <span style={{ color: "#C3E88D" }}>'react'</span>
                 </div>
-                <div className="font-mono text-xs text-muted-foreground mt-1">
-                  VITE v6.0.0 ready in 150 ms
+                <br />
+                <div>
+                  <span style={{ color: "#C792EA" }}>
+                    export default function
+                  </span>{" "}
+                  <span style={{ color: "#82AAFF" }}>App</span>
+                  <span style={{ color: "#89DDFF" }}>()</span>{" "}
+                  <span style={{ color: "#89DDFF" }}>{"{"}</span>
                 </div>
-                <div className="font-mono text-xs text-blue-400 mt-1">
-                  ➜ Local: http://localhost:5173/
+                <div style={{ paddingLeft: "24px" }}>
+                  <span style={{ color: "#C792EA" }}>const</span> [
+                  <span style={{ color: "#EEFFFF" }}>count</span>,{" "}
+                  <span style={{ color: "#EEFFFF" }}>setCount</span>] ={" "}
+                  <span style={{ color: "#82AAFF" }}>useState</span>
+                  <span style={{ color: "#89DDFF" }}>(</span>
+                  <span style={{ color: "#F78C6C" }}>0</span>
+                  <span style={{ color: "#89DDFF" }}>)</span>
+                </div>
+                <br />
+                <div style={{ paddingLeft: "24px" }}>
+                  <span style={{ color: "#C792EA" }}>return</span>{" "}
+                  <span style={{ color: "#89DDFF" }}>(</span>
+                </div>
+                <div style={{ paddingLeft: "48px" }}>
+                  <span style={{ color: "#89DDFF" }}>{"<"}</span>
+                  <span style={{ color: "#82AAFF" }}>div</span>{" "}
+                  <span style={{ color: "#FFCB6B" }}>className</span>
+                  <span style={{ color: "#89DDFF" }}>="</span>
+                  <span style={{ color: "#C3E88D" }}>min-h-screen</span>
+                  <span style={{ color: "#89DDFF" }}>"{">"}</span>
+                </div>
+                <div style={{ paddingLeft: "72px" }}>
+                  <span style={{ color: "#89DDFF" }}>{"<"}</span>
+                  <span style={{ color: "#82AAFF" }}>h1</span>
+                  <span style={{ color: "#89DDFF" }}>{">"}</span>
+                  <span style={{ color: "#EEFFFF" }}>
+                    Devix is blazing fast
+                  </span>
+                  <span style={{ color: "#89DDFF" }}>{"</h1>"}</span>
+                </div>
+                <div style={{ paddingLeft: "48px" }}>
+                  <span style={{ color: "#89DDFF" }}>{"</div>"}</span>
+                </div>
+                <div style={{ paddingLeft: "24px" }}>
+                  <span style={{ color: "#89DDFF" }}>)</span>
+                </div>
+                <div>
+                  <span style={{ color: "#89DDFF" }}>{"}"}</span>
+                </div>
+              </div>
+
+              {/* Terminal */}
+              <div
+                style={{
+                  height: "120px",
+                  background: "#080809",
+                  borderTop: "1px solid rgba(255,255,255,0.07)",
+                  padding: "8px 12px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E3D3B",
+                    fontSize: "11px",
+                    marginBottom: "8px",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Terminal
+                </div>
+                <div>
+                  <span style={{ color: "#5B7FFF" }}>~/workspace</span>
+                  <span style={{ color: "#6E6D6A" }}> $ </span>
+                  <span style={{ color: "#F0EEE8" }}>pnpm run dev</span>
+                </div>
+                <div style={{ color: "#3EFF9E", marginTop: "4px" }}>
+                  {" "}
+                  VITE v6.0.0 ready in 142ms
+                </div>
+                <div style={{ color: "#5B7FFF" }}>
+                  {" "}
+                  ➜ Local:{" "}
+                  <span style={{ color: "#6E6D6A" }}>
+                    http://localhost:5173/
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    marginTop: "4px",
+                  }}
+                >
+                  <span style={{ color: "#5B7FFF" }}>~/workspace</span>
+                  <span style={{ color: "#6E6D6A" }}> $ </span>
+                  <span
+                    className="animate-blink"
+                    style={{
+                      display: "inline-block",
+                      width: "8px",
+                      height: "14px",
+                      background: "#3EFF9E",
+                    }}
+                  />
                 </div>
               </div>
             </div>

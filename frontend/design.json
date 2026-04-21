@@ -1,0 +1,549 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "type": "saas_design_prompt",
+    "product_type": "Cloud IDE / Code Execution Platform",
+    "inspirations": [
+      "Linear",
+      "Stripe",
+      "Cluely",
+      "Vercel",
+      "Replit",
+      "Project IDX"
+    ],
+    "pages": ["landing_page", "project_playground"]
+  },
+
+  "design_system": {
+    "aesthetic": {
+      "direction": "Dark-first, brutally minimal, engineering-native",
+      "tone": "Raw, purposeful, terminal-meets-precision-instrument. Not decorative dark mode. Every element earns its place.",
+      "do_not": [
+        "No white or light backgrounds in the IDE",
+        "No rounded corners above 8px except modals",
+        "No gradient backgrounds except landing hero glow and pricing card top edge",
+        "No colored sidebar",
+        "No illustration-heavy marketing visuals — use real product UI screenshots",
+        "No Inter font",
+        "No uniform 3-column equal bento grids — break the layout",
+        "No vague social proof numbers — be specific"
+      ]
+    },
+
+    "colors": {
+      "background": {
+        "primary": "#0A0A0B",
+        "secondary": "#111114",
+        "elevated": "#18181C",
+        "deep": "#080809"
+      },
+      "border": {
+        "default": "rgba(255,255,255,0.07)",
+        "subtle": "rgba(255,255,255,0.04)",
+        "accent": "rgba(255,255,255,0.15)"
+      },
+      "text": {
+        "primary": "#F0EEE8",
+        "secondary": "#6E6D6A",
+        "tertiary": "#3E3D3B"
+      },
+      "brand": {
+        "accent": "#5B7FFF",
+        "accent_glow": "rgba(91,127,255,0.15)",
+        "accent_bg": "rgba(91,127,255,0.1)"
+      },
+      "semantic": {
+        "success": "#2DD98F",
+        "error": "#FF5757",
+        "warning": "#FFB547",
+        "terminal_green": "#3EFF9E"
+      }
+    },
+
+    "typography": {
+      "display": {
+        "family": "Instrument Serif or Fraunces (italic variant)",
+        "usage": "Landing page hero headings only",
+        "sizes": ["64px", "72px", "96px"],
+        "letter_spacing": "-0.02em"
+      },
+      "ui": {
+        "family": "Geist",
+        "fallback": "IBM Plex Mono",
+        "usage": "All UI text, body copy, labels"
+      },
+      "code": {
+        "family": "JetBrains Mono",
+        "features": "ligatures enabled",
+        "usage": "Editor, terminal, code snippets"
+      },
+      "scale_px": [11, 13, 14, 16, 20, 28, 40, 64, 96],
+      "line_height": {
+        "ui": 1.4,
+        "body": 1.6,
+        "landing_copy": 1.7
+      },
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "note": "Never use 600 or 700 — too heavy against dark bg"
+      }
+    },
+
+    "spacing": {
+      "base_unit": "4px",
+      "scale_px": [4, 8, 12, 16, 24, 32, 48, 64, 96]
+    },
+
+    "border_radius": {
+      "sharp": "2px",
+      "input": "4px",
+      "card": "6px",
+      "modal": "8px",
+      "note": "Sharp radius on code-context elements signals professionalism"
+    },
+
+    "shadows": {
+      "focus_ring": "0 0 0 2px rgba(91,127,255,0.5)",
+      "elevated_surface": "0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.5)",
+      "do_not": "No decorative drop shadows"
+    },
+
+    "motion": {
+      "hover_transition": "150ms ease",
+      "panel_resize": "0ms (instant — performance critical)",
+      "page_load_stagger": {
+        "animation": "translateY(12px) to 0 + opacity 0 to 1",
+        "delays_ms": [0, 80, 160, 240]
+      },
+      "terminal_cursor": "blink 1s step-end infinite",
+      "run_button_loading": "rotate 0.6s linear infinite",
+      "file_save": "unsaved dot: opacity+scale 0 in 200ms",
+      "new_file_in_tree": "height 0 to 28px in 150ms"
+    }
+  },
+
+  "pages": {
+    "landing_page": {
+      "goal": "Communicate fast, powerful, yours in under 3 seconds. Convert developer visitors to signups. No fluff. No stock photos. Real product UI as the hero.",
+
+      "sections": {
+        "navbar": {
+          "height_px": 56,
+          "position": "sticky",
+          "background": "rgba(10,10,11,0.85) with backdrop-filter: blur(12px)",
+          "border_bottom": "1px solid rgba(255,255,255,0.05) — increases to rgba(255,255,255,0.1) on scroll past 80px",
+          "layout": {
+            "left": "Logo mark (geometric glyph) + product name in Geist Medium",
+            "center": "Nav links: Features / Docs / Pricing / Changelog",
+            "right": "Sign in (ghost text link) + Start building (CTA button)"
+          },
+          "nav_links": {
+            "size": "14px",
+            "color": "text-secondary",
+            "hover": "text-primary, 0.15s ease"
+          },
+          "cta_button": {
+            "background": "#5B7FFF",
+            "text": "white",
+            "height": "32px",
+            "font_size": "14px",
+            "padding_x": "12px",
+            "border_radius": "4px",
+            "shadow": "0 0 16px rgba(91,127,255,0.3)",
+            "style": "solid fill — NOT outline"
+          }
+        },
+
+        "hero": {
+          "layout": "centered, 100vh, vertical stack with precise spacing",
+          "badge": {
+            "style": "small pill",
+            "background": "#18181C",
+            "border": "rgba(255,255,255,0.1)",
+            "font_size": "12px",
+            "color": "text-secondary",
+            "left_indicator": "6px pulsing dot in accent color, CSS keyframe scale 1 to 1.3",
+            "copy_example": "Now in public beta"
+          },
+          "headline": {
+            "font": "Instrument Serif or Fraunces, italic",
+            "size_desktop": "72–96px",
+            "size_mobile": "48px",
+            "color": "#F0EEE8",
+            "key_word_treatment": "gradient text: linear-gradient(135deg, #5B7FFF, #A78BFA) with -webkit-background-clip",
+            "copy_direction": "Punchy, verb-forward. Examples: Code. Run. Ship. / Your dev environment, everywhere."
+          },
+          "subheadline": {
+            "size": "20px",
+            "color": "text-secondary",
+            "max_width": "520px",
+            "align": "center",
+            "tone": "Specific and functional — not vague. Example: A full development environment in your browser. No setup. No config. Just code."
+          },
+          "cta_row": {
+            "layout": "horizontally centered, gap 12px",
+            "primary": {
+              "label": "Start for free",
+              "height": "40px",
+              "style": "accent fill"
+            },
+            "secondary": {
+              "label": "View demo",
+              "style": "ghost with border: 1px solid rgba(255,255,255,0.12)",
+              "hover": "border becomes accent color",
+              "icon": "play icon left"
+            },
+            "social_proof_below": {
+              "copy": "Trusted by 12,000+ developers",
+              "font_size": "13px",
+              "color": "text-tertiary",
+              "avatars": "4–5 tiny avatar circles stacked horizontally"
+            }
+          },
+          "hero_visual": {
+            "type": "Real product UI screenshot of the playground — editor + terminal + file tree",
+            "presentation": "centered, border: 1px solid rgba(255,255,255,0.08), border-radius: 8px",
+            "glow": "box-shadow: 0 0 80px rgba(91,127,255,0.12), 0 0 0 1px rgba(255,255,255,0.06)",
+            "background_pattern": "faint SVG dot grid — 24px spacing, rgba(255,255,255,0.025) dots",
+            "optional_animation": "CSS/JS type animation in terminal, green blinking cursor"
+          }
+        },
+
+        "social_proof_strip": {
+          "background": "#111114",
+          "border": "1px solid rgba(255,255,255,0.05) top and bottom",
+          "content": "Horizontally scrolling company/tool logos",
+          "logo_style": "muted, desaturated, opacity 0.4 default — hover 0.7",
+          "label": "Used by engineers at — 12px text-tertiary",
+          "animation": "CSS marquee keyframes scroll"
+        },
+
+        "features": {
+          "layout": "Asymmetric bento grid — NOT uniform 3-column cards",
+          "grid_pattern": [
+            "Row 1: large card (2/3 width) + narrow card (1/3 width)",
+            "Row 2: three equal cards",
+            "Row 3: narrow (1/3) + large (2/3) — mirrored from row 1"
+          ],
+          "card_style": {
+            "background": "#111114",
+            "border": "1px solid rgba(255,255,255,0.06)",
+            "border_radius": "8px",
+            "padding": "24px",
+            "hover": "border rgba(255,255,255,0.12) + transform: translateY(-2px), 0.2s ease",
+            "structure": "UI screenshot or SVG illustration top half, text bottom half"
+          },
+          "items": [
+            {
+              "id": "instant_environments",
+              "label": "Instant Environments",
+              "copy": "Zero setup. Pick a template and get a fully configured runtime in under 3 seconds.",
+              "visual": "Animation of env spinning up"
+            },
+            {
+              "id": "collaborative_editing",
+              "label": "Collaborative Editing",
+              "copy": "Pair program in real time. Multiple cursors, shared terminals, live presence.",
+              "visual": "Two colored user cursors on code snippet"
+            },
+            {
+              "id": "integrated_terminal",
+              "label": "Integrated Terminal",
+              "copy": "Full-featured bash/zsh terminal, right where you code.",
+              "visual": "Terminal UI snippet with green prompt and output"
+            },
+            {
+              "id": "ai_code_assist",
+              "label": "AI Code Assist",
+              "copy": "Inline completions that understand your codebase.",
+              "visual": "Ghost text suggestion appearing inline in editor"
+            },
+            {
+              "id": "file_system",
+              "label": "File System",
+              "copy": "VS Code-style folder tree. Full git support.",
+              "visual": "File tree UI snippet"
+            },
+            {
+              "id": "one_click_deploy",
+              "label": "Deploy in One Click",
+              "copy": "GitHub → Railway/Vercel/Render. Live in seconds.",
+              "visual": "Deploy log output in terminal"
+            }
+          ]
+        },
+
+        "how_it_works": {
+          "background": "#0A0A0B",
+          "border": "1px solid rgba(255,255,255,0.05) top and bottom",
+          "layout": "Horizontal 3-step with numbered indicators",
+          "step_number_style": "64px Geist Mono, opacity 0.12, absolute positioned behind label",
+          "connector": "1px dashed rgba(255,255,255,0.1) horizontal line between steps",
+          "steps": [
+            {
+              "number": "01",
+              "label": "Create a project",
+              "copy": "Pick a template or import from GitHub."
+            },
+            {
+              "number": "02",
+              "label": "Write and run code",
+              "copy": "Full IDE in browser. Terminal, files, AI."
+            },
+            {
+              "number": "03",
+              "label": "Ship it",
+              "copy": "One-click deploy or export to any platform."
+            }
+          ]
+        },
+
+        "testimonials": {
+          "layout": "Masonry-style card grid, 3 columns, column 2 starts 24px lower",
+          "card_style": {
+            "background": "#111114",
+            "border": "1px solid rgba(255,255,255,0.06)",
+            "padding": "20px"
+          },
+          "card_content": {
+            "quote": "15px text-primary, opening quotes in accent color",
+            "author_row": "avatar circle (initials, accent bg) + name (text-primary) + role/company (text-secondary)"
+          },
+          "do_not": "No star ratings — engineers find them low-signal"
+        },
+
+        "pricing": {
+          "background": "#0D0D10",
+          "layout": "3-tier horizontal: Free / Pro / Team — same height and padding",
+          "tiers": [
+            {
+              "name": "Free",
+              "cta": "Get started",
+              "cta_style": "outline"
+            },
+            {
+              "name": "Pro",
+              "highlighted": true,
+              "badge": "Most popular",
+              "badge_style": "accent bg, white text, positioned at top center, translateY(-50%)",
+              "card_border": "1px solid rgba(91,127,255,0.4)",
+              "card_bg_gradient": "linear-gradient(180deg, rgba(91,127,255,0.06) 0%, transparent 60%)",
+              "cta": "Start for free",
+              "cta_style": "accent fill"
+            },
+            {
+              "name": "Team",
+              "cta": "Contact us",
+              "cta_style": "outline"
+            }
+          ],
+          "price_style": "large number in display font, /mo in text-secondary 14px",
+          "feature_list_style": "accent color SVG checkmarks, 14px, clean line spacing"
+        },
+
+        "bottom_cta": {
+          "background_effect": "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(91,127,255,0.2) 0%, transparent 70%)",
+          "layout": "center-aligned",
+          "headline": "Large display font — example: Start building today.",
+          "subtext": "16px text-secondary",
+          "cta": {
+            "label": "Start for free",
+            "height": "48px",
+            "style": "accent fill with subtle glow"
+          }
+        },
+
+        "footer": {
+          "background": "#0A0A0B",
+          "border_top": "1px solid rgba(255,255,255,0.06)",
+          "columns": ["Product", "Resources", "Company", "Connect"],
+          "link_style": "13px text-tertiary, hover text-primary 0.15s ease",
+          "bottom_row": {
+            "left": "copyright text",
+            "right": "social icons — GitHub, X, Discord — SVG 16x16"
+          }
+        }
+      }
+    },
+
+    "project_playground": {
+      "goal": "Professional, focused, distraction-free coding environment. VS Code precision meets modern SaaS polish.",
+      "layout": {
+        "type": "CSS Grid or Flexbox, full viewport height, no page scroll",
+        "structure": {
+          "topbar": "full width, 40px height",
+          "sidebar": "240px width, left",
+          "editor": "flex-1, center",
+          "terminal": "220px height, bottom of editor area",
+          "right_panel": "300px width, right, togglable"
+        },
+        "background": "#0E0E11"
+      },
+
+      "topbar": {
+        "height_px": 40,
+        "background": "#0A0A0B",
+        "border_bottom": "1px solid rgba(255,255,255,0.07)",
+        "left": {
+          "items": [
+            "Product logo mark — 12px text-secondary",
+            "Breadcrumb: project-name / filename.ts — 13px Geist text-secondary, / separator in text-tertiary",
+            "Unsaved indicator: 6px dot in #FFB547 if file has unsaved changes"
+          ]
+        },
+        "center": {
+          "items": [
+            "Run button: pill shape, ▶ Run label, accent background, 28px height, 12px font, border-radius 4px",
+            "Status: ● Running or ● Ready — 11px, success or text-secondary color"
+          ]
+        },
+        "right": {
+          "items": [
+            "Share button — ghost outline style",
+            "User avatar — 24px circle with initials",
+            "Settings gear icon"
+          ]
+        }
+      },
+
+      "sidebar": {
+        "width_px": 240,
+        "background": "#0E0E11",
+        "border_right": "1px solid rgba(255,255,255,0.06)",
+        "header": {
+          "label": "EXPLORER — 11px uppercase text-tertiary",
+          "icons": "new file, new folder, collapse all — 14px text-tertiary, hover text-primary"
+        },
+        "file_tree": {
+          "row_height_px": 28,
+          "folder_row": "chevron SVG (6x6) + folder icon + name — 13px Geist",
+          "file_row": "indent 16px + file type icon + filename — 13px Geist",
+          "indent_per_level_px": 12,
+          "active_file": "background rgba(91,127,255,0.1), left border 2px solid #5B7FFF",
+          "hover": "background rgba(255,255,255,0.04)",
+          "file_icon_colors": {
+            ".ts": "#4FC1FF",
+            ".tsx": "#4FC1FF",
+            ".js": "#F1C40F",
+            ".jsx": "#F1C40F",
+            ".css": "#E879F9",
+            ".scss": "#E879F9",
+            ".json": "#FFB547",
+            ".md": "#6E6D6A",
+            ".env": "#2DD98F"
+          }
+        }
+      },
+
+      "editor": {
+        "background": "#0E0E11",
+        "tab_bar": {
+          "height_px": 32,
+          "tab_style": {
+            "font_size": "13px",
+            "font": "Geist",
+            "inactive_color": "text-secondary",
+            "inactive_background": "transparent",
+            "active_color": "text-primary",
+            "active_background": "#111114",
+            "active_border_bottom": "1px solid #5B7FFF",
+            "close_button": "× appears on hover",
+            "divider": "1px solid rgba(255,255,255,0.05)"
+          }
+        },
+        "code_area": {
+          "font": "JetBrains Mono 13px",
+          "line_height": 1.6,
+          "line_numbers": {
+            "color": "text-tertiary",
+            "gutter_width_px": 48,
+            "align": "right"
+          },
+          "active_line": "rgba(255,255,255,0.025) full-width highlight",
+          "cursor": "2px solid #5B7FFF, CSS blink animation",
+          "selection": "background rgba(91,127,255,0.2)"
+        },
+        "syntax_highlighting": {
+          "keywords": "#C792EA",
+          "strings": "#C3E88D",
+          "numbers": "#F78C6C",
+          "comments": "#4A4A6A",
+          "functions": "#82AAFF",
+          "types_interfaces": "#FFCB6B",
+          "punctuation_operators": "#89DDFF",
+          "variables": "#EEFFFF"
+        },
+        "ai_ghost_text": {
+          "color": "rgba(150,150,180,0.5)",
+          "accept_key": "Tab",
+          "accept_animation": "opacity 0.5 to 1.0 flash in 150ms"
+        }
+      },
+
+      "terminal": {
+        "height_px": 220,
+        "background": "#080809",
+        "border_top": "1px solid rgba(255,255,255,0.07)",
+        "tab_bar": {
+          "height_px": 28,
+          "items": ["Terminal label", "+ new terminal button"],
+          "font_size": "12px"
+        },
+        "content": {
+          "font": "JetBrains Mono 12px",
+          "prompt_color": "#5B7FFF",
+          "command_color": "text-primary",
+          "output_default": "text-secondary",
+          "error_color": "#FF5757",
+          "success_color": "#2DD98F",
+          "cursor": "8x2px block, color #3EFF9E, blinking"
+        },
+        "resize_handle": {
+          "height_px": 4,
+          "type": "draggable strip",
+          "hover": "background rgba(91,127,255,0.4)",
+          "cursor": "row-resize"
+        }
+      },
+
+      "right_panel": {
+        "width_px": 300,
+        "background": "#111114",
+        "border_left": "1px solid rgba(255,255,255,0.06)",
+        "toggle": "collapsible",
+        "tabs": ["AI", "Output", "Extensions"],
+        "ai_chat_tab": {
+          "layout": "input pinned bottom, messages scroll above",
+          "user_bubble": "right-aligned, background rgba(91,127,255,0.15), border-radius 8px 8px 2px 8px",
+          "ai_response": "left-aligned, no bubble, left border 2px solid rgba(255,255,255,0.1)",
+          "code_blocks": "JetBrains Mono, background #080809, border, copy button top-right"
+        }
+      },
+
+      "command_palette": {
+        "trigger": "⌘K or Ctrl+K",
+        "overlay": "background rgba(0,0,0,0.7), backdrop-filter blur(4px)",
+        "palette_box": {
+          "width_px": 560,
+          "position": "centered, 12px from viewport top",
+          "background": "#16161A",
+          "border": "1px solid rgba(255,255,255,0.1)",
+          "border_radius": "8px",
+          "shadow": "0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)"
+        },
+        "search_input": {
+          "height_px": 48,
+          "font": "Geist 16px",
+          "border": "none except 1px solid rgba(255,255,255,0.07) bottom only",
+          "badge": "⌘K badge right side inside input"
+        },
+        "result_rows": {
+          "height_px": 36,
+          "font_size": "14px",
+          "structure": "icon left + label + keyboard shortcut hint right in text-tertiary"
+        }
+      }
+    }
+  }
+}
