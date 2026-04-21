@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { FileTreeNode } from './FileTreeNode'
 import type { DirectoryNode } from '@/types/project'
 import { FileTreeDialogs } from './FileTreeDialogs'
 import { useFileTreeDialogs } from '@/hooks/useFileTreeDialogs'
+import { useFileTreeToggle } from '@/hooks/useFileTreeToggle'
 
 interface FileTreeProps {
   root: DirectoryNode
@@ -10,8 +10,7 @@ interface FileTreeProps {
 }
 
 export const FileTree = ({ root, onFileClick }: FileTreeProps) => {
-  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({})
-
+  const { openFolders, toggleFolder } = useFileTreeToggle()
   const {
     dialogState,
     deleteNode,
@@ -23,9 +22,6 @@ export const FileTree = ({ root, onFileClick }: FileTreeProps) => {
     handleDialogSubmit,
     handleDeleteSubmit,
   } = useFileTreeDialogs()
-
-  const toggleFolder = (nodePath: string) =>
-    setOpenFolders((prev) => ({ ...prev, [nodePath]: !prev[nodePath] }))
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
