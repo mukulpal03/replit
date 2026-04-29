@@ -6,13 +6,15 @@ import {
   notFoundHandler,
 } from "./middlewares/error-handler";
 
+import { globalApiLimiter } from "./middlewares/rate-limit";
+
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.use("/api", apiRouter);
+app.use("/api", globalApiLimiter, apiRouter);
 
 app.get("/ping", (_, res) => {
   res.json({ message: "pong" });

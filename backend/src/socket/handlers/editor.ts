@@ -23,7 +23,7 @@ export const handleEditorSocketEvents = (socket: Socket) => {
       await fs.writeFile(sanitizedPath, data);
       socket.emit("writeFileSuccess", { data: "File written successfully" });
       socket.to(projectId).emit("fileUpdated", { pathToFileOrDir, data });
-    })
+    }, { rateLimit: { max: 30, windowMs: 1000 } })
   );
 
   socket.on(
@@ -41,7 +41,7 @@ export const handleEditorSocketEvents = (socket: Socket) => {
           throw error;
         }
       }
-    })
+    }, { rateLimit: { max: 30, windowMs: 1000 } })
   );
 
   socket.on(
