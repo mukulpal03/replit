@@ -7,8 +7,9 @@ export const sanitizePath = (base: string, userInput: string): string => {
   }
 
   // Resolve the full path and ensure it's within the base directory
-  // We use path.join and then path.resolve to get an absolute path
-  const resolvedPath = path.resolve(path.join(base, userInput));
+  // We resolve the userInput relative to the current working directory (backend root)
+  // which is how the paths are currently structured in the app.
+  const resolvedPath = path.resolve(userInput);
   const normalizedBase = path.resolve(base);
 
   if (!resolvedPath.startsWith(normalizedBase)) {

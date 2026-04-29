@@ -1,5 +1,8 @@
-import { Socket } from "socket.io";
+import path from "path";
 import fs from "fs/promises";
+import { sanitizePath } from "../../utils/path";
+import { Socket } from "socket.io";
+import { createSocketHandler } from "../utils";
 
 interface EventPayload {
   data: string;
@@ -8,142 +11,99 @@ interface EventPayload {
 }
 
 export const handleEditorSocketEvents = (socket: Socket) => {
-  socket.on("writeFile", async ({ data, pathToFileOrDir }: EventPayload) => {
-    try {
-      await fs.writeFile(pathToFileOrDir, data);
-      socket.emit("writeFileSuccess", {
-        data: "File written successfully",
-      });
+  const projectId = socket.handshake.query.projectId as string;
+  const projectBase = path.resolve(process.cwd(), "projects", projectId || "");
+  
+  const handleEvent = createSocketHandler(socket, projectId);
 
-      // Broadcast to other users in the same project
-      const projectId = socket.handshake.query.projectId as string;
+  socket.on(
+    "writeFile",
+    handleEvent<EventPayload>("writeFile", async ({ data, pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      await fs.writeFile(sanitizedPath, data);
+      socket.emit("writeFileSuccess", { data: "File written successfully" });
+      socket.to(projectId).emit("fileUpdated", { pathToFileOrDir, data });
+    })
+  );
 
-      if (projectId) {
-        socket.to(projectId).emit("fileUpdated", { pathToFileOrDir, data });
-      }
-    } catch (error) {
-      console.log("Error while writing file", error);
-      socket.emit("writeFileError", error);
-    }
-  });
-
-  socket.on("createFile", async ({ pathToFileOrDir }: EventPayload) => {
-    try {
-      // 'wx' flag: Open for writing. Fails if the path exists.
-      await fs.writeFile(pathToFileOrDir, "", { flag: "wx" });
-
-      socket.emit("createFileSuccess", {
-        data: "File created successfully",
-      });
-
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
+  socket.on(
+    "createFile",
+    handleEvent<EventPayload>("createFile", async ({ pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      try {
+        await fs.writeFile(sanitizedPath, "", { flag: "wx" });
+        socket.emit("createFileSuccess", { data: "File created successfully" });
         socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+      } catch (error: any) {
+        if (error.code === "EEXIST") {
+          socket.emit("createFileError", { data: "File already exists" });
+        } else {
+          throw error;
+        }
       }
-    } catch (error: any) {
-      if (error.code === "EEXIST") {
-        socket.emit("createFileError", { data: "File already exists" });
-      } else {
-        console.log("Error while creating file", error);
-        socket.emit("createFileError", { data: "Failed to create file" });
-      }
-    }
-  });
+    })
+  );
 
-  socket.on("readFile", async ({ pathToFileOrDir }: EventPayload) => {
-    try {
-      const data = await fs.readFile(pathToFileOrDir, "utf-8");
+  socket.on(
+    "readFile",
+    handleEvent<EventPayload>("readFile", async ({ pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      const data = await fs.readFile(sanitizedPath, "utf-8");
       socket.emit("readFileSuccess", { data, pathToFileOrDir });
-    } catch (error) {
-      console.log("Error while reading file", error);
-      socket.emit("readFileError", error);
-    }
-  });
+    })
+  );
 
-  socket.on("deleteFile", async ({ pathToFileOrDir }: EventPayload) => {
-    try {
-      await fs.unlink(pathToFileOrDir);
-      socket.emit("deleteFileSuccess", {
-        data: "File deleted successfully",
-      });
+  socket.on(
+    "deleteFile",
+    handleEvent<EventPayload>("deleteFile", async ({ pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      await fs.unlink(sanitizedPath);
+      socket.emit("deleteFileSuccess", { data: "File deleted successfully" });
+      socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+    })
+  );
 
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
-        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
-      }
-    } catch (error) {
-      console.log("Error while deleting file", error);
-      socket.emit("deleteFileError", error);
-    }
-  });
-
-  socket.on("renameFile", async ({ pathToFileOrDir, newPath }: EventPayload) => {
-    try {
+  socket.on(
+    "renameFile",
+    handleEvent<EventPayload>("renameFile", async ({ pathToFileOrDir, newPath }) => {
       if (!newPath) throw new Error("newPath is required for rename");
-      await fs.rename(pathToFileOrDir, newPath);
-      socket.emit("renameFileSuccess", {
-        data: "File renamed successfully",
-      });
+      const sanitizedOldPath = sanitizePath(projectBase, pathToFileOrDir);
+      const sanitizedNewPath = sanitizePath(projectBase, newPath);
+      await fs.rename(sanitizedOldPath, sanitizedNewPath);
+      socket.emit("renameFileSuccess", { data: "File renamed successfully" });
+      socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+    })
+  );
 
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
-        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
-      }
-    } catch (error) {
-      console.log("Error while renaming file", error);
-      socket.emit("renameFileError", error);
-    }
-  });
+  socket.on(
+    "createDirectory",
+    handleEvent<EventPayload>("createDirectory", async ({ pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      await fs.mkdir(sanitizedPath);
+      socket.emit("createDirectorySuccess", { data: "Directory created successfully" });
+      socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+    })
+  );
 
-  socket.on("createDirectory", async ({ pathToFileOrDir }: EventPayload) => {
-    try {
-      await fs.mkdir(pathToFileOrDir);
-      socket.emit("createDirectorySuccess", {
-        data: "Directory created successfully",
-      });
+  socket.on(
+    "deleteDirectory",
+    handleEvent<EventPayload>("deleteDirectory", async ({ pathToFileOrDir }) => {
+      const sanitizedPath = sanitizePath(projectBase, pathToFileOrDir);
+      await fs.rm(sanitizedPath, { recursive: true });
+      socket.emit("deleteDirectorySuccess", { data: "Directory deleted successfully" });
+      socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+    })
+  );
 
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
-        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
-      }
-    } catch (error) {
-      console.log("Error while creating directory", error);
-      socket.emit("createDirectoryError", error);
-    }
-  });
-
-  socket.on("deleteDirectory", async ({ pathToFileOrDir }: EventPayload) => {
-    try {
-      await fs.rm(pathToFileOrDir, { recursive: true });
-      socket.emit("deleteDirectorySuccess", {
-        data: "Directory deleted successfully",
-      });
-
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
-        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
-      }
-    } catch (error) {
-      console.log("Error while deleting directory", error);
-      socket.emit("deleteDirectoryError", error);
-    }
-  });
-
-  socket.on("renameDirectory", async ({ pathToFileOrDir, newPath }: EventPayload) => {
-    try {
+  socket.on(
+    "renameDirectory",
+    handleEvent<EventPayload>("renameDirectory", async ({ pathToFileOrDir, newPath }) => {
       if (!newPath) throw new Error("newPath is required for rename");
-      await fs.rename(pathToFileOrDir, newPath);
-      socket.emit("renameDirectorySuccess", {
-        data: "Directory renamed successfully",
-      });
-
-      const projectId = socket.handshake.query.projectId as string;
-      if (projectId) {
-        socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
-      }
-    } catch (error) {
-      console.log("Error while renaming directory", error);
-      socket.emit("renameDirectoryError", error);
-    }
-  });
+      const sanitizedOldPath = sanitizePath(projectBase, pathToFileOrDir);
+      const sanitizedNewPath = sanitizePath(projectBase, newPath);
+      await fs.rename(sanitizedOldPath, sanitizedNewPath);
+      socket.emit("renameDirectorySuccess", { data: "Directory renamed successfully" });
+      socket.to(projectId).emit("treeUpdated", { pathToFileOrDir });
+    })
+  );
 };
