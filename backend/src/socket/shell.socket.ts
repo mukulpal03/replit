@@ -7,22 +7,18 @@ export const handleShellNamespace = (namespace: Namespace) => {
     console.log("User connected to shell", socket.id);
 
     const projectId = socket.handshake.query.projectId as string;
-    console.log(
-      `User connected to shell namespace. Project ID: ${projectId || "None"}`,
-    );
+    console.log(`User connected to shell namespace. Project ID: ${projectId || "None"}`);
 
     if (projectId) {
       socket.join(projectId);
       console.log(`User ${socket.id} joined shell room: ${projectId}`);
 
-      // Ensure image exists and start container
       (async () => {
         try {
           await DockerService.ensureImage();
           const container = await DockerService.getOrCreateContainer(projectId);
           const stream = await DockerService.createShellStream(container.id);
-
-          handleShellSocketEvents(socket, stream);
+          handleShellSocketEvents(socket, stream, projectId);
         } catch (error) {
           console.error("Failed to setup docker shell:", error);
           socket.emit(
@@ -37,7 +33,9 @@ export const handleShellNamespace = (namespace: Namespace) => {
 
     socket.on("disconnect", () => {
       console.log("User disconnected from shell", socket.id);
-      DockerService.stopContainer(projectId);
+      if (projectId) {
+        DockerService.stopAndRemoveContainer(projectId);
+      }
     });
   });
 };

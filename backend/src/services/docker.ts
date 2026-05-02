@@ -4,12 +4,14 @@ import fs from "fs/promises";
 
 const docker = new Docker();
 const IMAGE_NAME = "devix-sandbox";
+const SANDBOX_NETWORK = "devix-sandbox-net";
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+const REAPER_INTERVAL_MS = 5 * 60 * 1000;
+
+// Tracks last terminal activity per projectId for the idle reaper.
+const containerActivity = new Map<string, number>();
 
 export class DockerService {
-  /**
-   * Ensures the Docker image is available.
-   * If it doesn't exist, it attempts to build it from the backend Dockerfile.
-   */
   static async ensureImage() {
     try {
       await docker.getImage(IMAGE_NAME).inspect();
@@ -18,40 +20,64 @@ export class DockerService {
       console.log(`Image ${IMAGE_NAME} not found. Building...`);
       const contextPath = process.cwd();
 
-      // Simple implementation of build
-      // In a production environment, this should be more robust
       const stream = await docker.buildImage(
-        {
-          context: contextPath,
-          src: ["Dockerfile"],
-        },
+        { context: contextPath, src: ["Dockerfile"] },
         { t: IMAGE_NAME },
       );
 
       await new Promise((resolve, reject) => {
         docker.modem.followProgress(
           stream,
-          (err, res) => {
-            if (err) reject(err);
-            else resolve(res);
-          },
-          (event) => {
-            if (event.stream) {
-              process.stdout.write(event.stream);
-            }
-          },
+          (err, res) => (err ? reject(err) : resolve(res)),
+          (event) => { if (event.stream) process.stdout.write(event.stream); },
         );
       });
       console.log(`Image ${IMAGE_NAME} built successfully.`);
     }
   }
 
-  /**
-   * Starts a container for a project and provides an interactive bash stream.
-   */
+  // Creates the isolated bridge network if it doesn't exist.
+  // ICC is disabled so containers cannot reach each other.
+  static async ensureNetwork() {
+    try {
+      await docker.getNetwork(SANDBOX_NETWORK).inspect();
+      console.log(`Network ${SANDBOX_NETWORK} already exists.`);
+    } catch {
+      console.log(`Network ${SANDBOX_NETWORK} not found. Creating...`);
+      await docker.createNetwork({
+        Name: SANDBOX_NETWORK,
+        Driver: "bridge",
+        Options: {
+          "com.docker.network.bridge.enable_icc": "false",
+        },
+      });
+      console.log(`Network ${SANDBOX_NETWORK} created.`);
+    }
+  }
+
+  // Kills idle containers that haven't had terminal activity within IDLE_TIMEOUT_MS.
+  static startIdleReaper() {
+    const id = setInterval(async () => {
+      const now = Date.now();
+      for (const [projectId, lastActivity] of containerActivity.entries()) {
+        if (now - lastActivity > IDLE_TIMEOUT_MS) {
+          console.log(`[Reaper] Stopping idle container: ${projectId}`);
+          await DockerService.stopAndRemoveContainer(projectId);
+        }
+      }
+    }, REAPER_INTERVAL_MS);
+
+    id.unref();
+    console.log(`[Reaper] Started. Idle timeout: ${IDLE_TIMEOUT_MS / 60000}min.`);
+  }
+
+  static recordActivity(projectId: string) {
+    containerActivity.set(projectId, Date.now());
+  }
+
   static async getOrCreateContainer(projectId: string) {
     const containerName = `sandbox-${projectId}`;
-    let container = docker.getContainer(containerName);
+    let container: Docker.Container = docker.getContainer(containerName);
 
     try {
       const data = await container.inspect();
@@ -61,15 +87,8 @@ export class DockerService {
     } catch (error) {
       console.log(`Container ${containerName} not found. Creating...`);
 
-      // Absolute path to the project directory on host
-      // Assuming projects are in e:/replit/backend/projects/
-      const hostProjectPath = path.resolve(
-        process.cwd(),
-        "projects",
-        projectId,
-      );
+      const hostProjectPath = path.resolve(process.cwd(), "projects", projectId);
 
-      // Ensure host project path exists
       try {
         await fs.access(hostProjectPath);
       } catch {
@@ -97,6 +116,20 @@ export class DockerService {
             "8000/tcp": [{ HostIp: "127.0.0.1", HostPort: "0" }],
             "8080/tcp": [{ HostIp: "127.0.0.1", HostPort: "0" }],
           },
+          // Resource limits
+          PidsLimit: 100,
+          Memory: 512 * 1024 * 1024,
+          NanoCpus: 1 * 1e9,
+          // Network isolation
+          NetworkMode: SANDBOX_NETWORK,
+          // Capability hardening
+          CapDrop: ["ALL"],
+          CapAdd: [],
+          SecurityOpt: ["no-new-privileges:true"],
+          // Read-only OS filesystem; project volume stays writable
+          ReadonlyRootfs: true,
+          Tmpfs: { "/tmp": "rw,noexec,nosuid,size=100m" },
+          Privileged: false,
         },
         WorkingDir: "/home/sandbox/projects",
       });
@@ -104,16 +137,13 @@ export class DockerService {
       await container.start();
     }
 
+    containerActivity.set(projectId, Date.now());
     return container;
   }
 
-  /**
-   * Attaches to a container's bash and returns a stream.
-   */
   static async createShellStream(containerId: string) {
     const container = docker.getContainer(containerId);
 
-    // Use exec to start a fresh bash session
     const exec = await container.exec({
       Cmd: ["/bin/bash"],
       AttachStdin: true,
@@ -122,17 +152,10 @@ export class DockerService {
       Tty: true,
     });
 
-    const stream = await exec.start({
-      hijack: true,
-      stdin: true,
-    });
-
+    const stream = await exec.start({ hijack: true, stdin: true });
     return stream;
   }
 
-  /**
-   * Retrieves mapped ports for the container
-   */
   static async getContainerPorts(projectId: string) {
     const containerName = `sandbox-${projectId}`;
     const container = docker.getContainer(containerName);
@@ -152,10 +175,7 @@ export class DockerService {
       }
       return mappedPorts;
     } catch (error) {
-      console.error(
-        `Error inspecting container ports for ${containerName}:`,
-        error,
-      );
+      console.error(`Error inspecting container ports for ${containerName}:`, error);
       return {};
     }
   }
@@ -169,5 +189,22 @@ export class DockerService {
     } catch (e) {
       console.warn(`Could not stop container ${containerName}`, e);
     }
+  }
+
+  static async removeContainer(projectId: string) {
+    const containerName = `sandbox-${projectId}`;
+    const container = docker.getContainer(containerName);
+    try {
+      await container.remove({ force: false });
+      console.log(`Container ${containerName} removed.`);
+    } catch (e) {
+      console.warn(`Could not remove container ${containerName}`, e);
+    }
+  }
+
+  static async stopAndRemoveContainer(projectId: string) {
+    await DockerService.stopContainer(projectId);
+    await DockerService.removeContainer(projectId);
+    containerActivity.delete(projectId);
   }
 }
