@@ -3,19 +3,20 @@ import fs from "fs/promises";
 import path from "path";
 import directoryTree from "directory-tree";
 import { REACT_PROJECT_COMMAND } from "../config/server";
-import { execAsync } from "../utils/exec";
 import { AppError } from "../utils/app-error";
+import { DockerService } from "./docker";
 
 export const createProjectService = async (): Promise<string> => {
   const id = uuidv4();
-  const projectPath = `projects/${id}`;
+  const projectPath = path.resolve(process.cwd(), "projects", id);
+
+  await fs.mkdir(projectPath, { recursive: true });
 
   try {
-    await fs.mkdir(projectPath);
-    await execAsync(REACT_PROJECT_COMMAND, {
-      cwd: projectPath,
-    });
+    await DockerService.scaffoldProject(id, REACT_PROJECT_COMMAND);
   } catch (error) {
+    await fs.rm(projectPath, { recursive: true, force: true });
+    await DockerService.stopAndRemoveContainer(id);
     throw new AppError("Failed to create project", 500);
   }
 

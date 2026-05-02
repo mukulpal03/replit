@@ -138,6 +138,38 @@ export class DockerService {
     return container;
   }
 
+  // Runs the scaffold command inside the container and waits for it to finish.
+  // Uses /bin/sh so the full command string (flags, args) is handled correctly.
+  static async scaffoldProject(projectId: string, command: string): Promise<void> {
+    const container = await DockerService.getOrCreateContainer(projectId);
+
+    const exec = await docker.getContainer(container.id).exec({
+      Cmd: ["/bin/sh", "-c", command],
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+      WorkingDir: "/home/sandbox/projects",
+    });
+
+    const stream = await exec.start({ hijack: true, stdin: false });
+
+    await new Promise<void>((resolve, reject) => {
+      stream.on("end", async () => {
+        try {
+          const info = await exec.inspect();
+          if (info.ExitCode !== 0) {
+            reject(new Error(`Scaffold command exited with code ${info.ExitCode}`));
+          } else {
+            resolve();
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+      stream.on("error", reject);
+    });
+  }
+
   static async createShellStream(containerId: string) {
     const container = docker.getContainer(containerId);
 
