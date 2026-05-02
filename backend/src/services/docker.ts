@@ -1,12 +1,9 @@
 import Docker from "dockerode";
 import path from "path";
 import fs from "fs/promises";
+import { IMAGE_NAME, SANDBOX_NETWORK, IDLE_TIMEOUT_MS, REAPER_INTERVAL_MS } from "../config/docker";
 
 const docker = new Docker();
-const IMAGE_NAME = "devix-sandbox";
-const SANDBOX_NETWORK = "devix-sandbox-net";
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-const REAPER_INTERVAL_MS = 5 * 60 * 1000;
 
 // Tracks last terminal activity per projectId for the idle reaper.
 const containerActivity = new Map<string, number>();
