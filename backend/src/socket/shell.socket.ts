@@ -1,6 +1,7 @@
 import { Socket, Namespace } from "socket.io";
 import { handleShellSocketEvents } from "./handlers/shell";
 import { DockerService } from "../services/docker";
+import { ConnectionRegistry } from "../services/connection-registry";
 
 export const handleShellNamespace = (namespace: Namespace) => {
   namespace.on("connection", (socket: Socket) => {
@@ -11,6 +12,7 @@ export const handleShellNamespace = (namespace: Namespace) => {
 
     if (projectId) {
       socket.join(projectId);
+      ConnectionRegistry.connect(projectId);
       console.log(`User ${socket.id} joined shell room: ${projectId}`);
 
       (async () => {
@@ -34,7 +36,10 @@ export const handleShellNamespace = (namespace: Namespace) => {
     socket.on("disconnect", () => {
       console.log("User disconnected from shell", socket.id);
       if (projectId) {
-        DockerService.stopAndRemoveContainer(projectId);
+        const isLastConnection = ConnectionRegistry.disconnect(projectId);
+        if (isLastConnection) {
+          DockerService.stopAndRemoveContainer(projectId);
+        }
       }
     });
   });
